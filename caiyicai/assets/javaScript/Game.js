@@ -72,6 +72,7 @@ cc.Class({
         newSatr.getComponent(itemName).moveItem(); 
     },
     despawnStar: function(star,type){
+        this.itemCount = this.itemCount + 1;
         var itemPool = null;
         if (!type){
             type = 1;
@@ -84,7 +85,7 @@ cc.Class({
             itemPool = this.diamondPool;
         }
         itemPool.put(star);
-        this.createNewItem(type);
+        this.createNewItem(this.itemNoConfig["no"+this.itemCount]);
     },
     gainScore: function(nScore){
         this.score += nScore;
@@ -93,17 +94,41 @@ cc.Class({
     getRandomPlayerPos:function(){
         return -cc.random0To1()* this.ground.width/2 + this.player.getComponent('Player').node.getContentSize().width;
     },
-    onGamestart:function(){
+    gameStart:function(){
+        this.itemCount = 1;
         this.score = 0;
         this.scoreDisplay.string = 'Score:' + this.score.toString();
-        this.createNewItem(3);
+        this.createNewItem(this.itemNoConfig["no"+this.itemCount]);
         this.btnNode.setPositionX(3000);
         var x = this.getRandomPlayerPos();
         this.player.getComponent('Player').resertPos(cc.p(x,this.ground.y/2+540));
     },
+    randomConfigData:function(){
+        var randomConfig = Math.floor(cc.random0To1()*10);
+        if (randomConfig == 0){
+            randomConfig = 1;
+        }
+        var self = this;
+        cc.loader.load(cc.url.raw('resources/itemConfig.json'), function(err,res){  
+            if (err) {  
+                cc.log(err);  
+            }else{  
+
+                self.itemNoConfig = res[randomConfig+""];
+                cc.log(res);
+                cc.log(res[randomConfig+""]["no1"]);
+                self.gameStart();
+            }  
+        }); 
+    },
+    
+    
     gameOver: function(){
         this.player.getComponent('Player').stopMove();
         this.btnNode.setPositionX(0);
+    },
+    resertData:function(){
+        this.randomConfigData();
     },
     // update (dt) {},
 });
