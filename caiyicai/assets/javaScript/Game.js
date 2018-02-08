@@ -26,6 +26,10 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
+        btnContinue: {
+            default: null,
+            type: cc.Node,
+        },
         scoreDisplay:{
             default: null,
             type: cc.Label,
@@ -36,6 +40,7 @@ cc.Class({
         this.starPool = new cc.NodePool('Star');
         this.goldPool = new cc.NodePool('Gold');
         this.diamondPool = new cc.NodePool('Diamond');
+        this.next = false;
         this.score = 0;
     },
 
@@ -72,7 +77,7 @@ cc.Class({
         newSatr.getComponent(itemName).moveItem(); 
     },
     despawnStar: function(star,type){
-        this.itemCount = this.itemCount + 1;
+        
         var itemPool = null;
         if (!type){
             type = 1;
@@ -85,6 +90,11 @@ cc.Class({
             itemPool = this.diamondPool;
         }
         itemPool.put(star);
+        if (this.itemNoConfig["length"] == this.itemCount){
+            this.gameNextStation();
+            return;
+        }
+        this.itemCount = this.itemCount + 1;
         this.createNewItem(this.itemNoConfig["no"+this.itemCount]);
     },
     gainScore: function(nScore){
@@ -96,10 +106,16 @@ cc.Class({
     },
     gameStart:function(){
         this.itemCount = 1;
-        this.score = 0;
+        if (!this.next)
+            this.score = 0;
+        else
+            this.score = this.score;
+            
+        this.next = false;
         this.scoreDisplay.string = 'Score:' + this.score.toString();
         this.createNewItem(this.itemNoConfig["no"+this.itemCount]);
         this.btnNode.setPositionX(3000);
+        this.btnContinue.setPositionX(3000);
         var x = this.getRandomPlayerPos();
         this.player.getComponent('Player').resertPos(cc.p(x,this.ground.y/2+540));
     },
@@ -115,14 +131,16 @@ cc.Class({
             }else{  
 
                 self.itemNoConfig = res[randomConfig+""];
-                cc.log(res);
-                cc.log(res[randomConfig+""]["no1"]);
                 self.gameStart();
             }  
         }); 
     },
     
-    
+    gameNextStation: function(){
+        this.player.getComponent('Player').stopMove();
+        this.btnContinue.setPositionX(0);
+        this.next = true;
+    },
     gameOver: function(){
         this.player.getComponent('Player').stopMove();
         this.btnNode.setPositionX(0);
